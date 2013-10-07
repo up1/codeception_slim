@@ -1,10 +1,14 @@
 <?php
 use Slim\Slim as Slim;
 require 'vendor/autoload.php';
-$app = new Slim();
+require 'WineDao.php';
+require 'WinePdoDao.php';
 
-$app->get('/hello/:name', function($name){
-  echo "Hello, $name";
+$app = new Slim();
+$app->log->setEnabled(true);
+
+$app->container->singleton('wineDao', function () {
+  return new WinePdoDao();
 });
 
 $app->get('/wines', 'getWines');
@@ -16,36 +20,24 @@ $app->delete('/wine/:id', 'deleteWine');
 $app->run();
 
 function deleteWine($id){
-  $sql = "DELETE FROM WINES WHERE id=:id";
   try{
-    $dbConnection = getDatabaseConnection();
-    $statement = $dbConnection->prepare($sql);
-    $statement->bindParam("id", $id);
-    $statement->execute();
-    $dbConnection = null;
+    $app = Slim::getInstance();
+    $wineDao = $app->wineDao;
+    $wineDao->deleteWine($id);
     echo "deleted";
   }catch(PDOException $exception){
-
+    echo '{"error":{"text":'. $exception->getMessage() .'}}';
   }
 }
 
 function updateWine($id){
-  $sql = "UPDATE WINES SET name=:name, grapes=:grapes, country=:country, region=:region, year=:year, note=:note WHERE id=:id";
   $request = Slim::getInstance()->request();
   $body = $request->getBody();
   $wine = json_decode($body);
   try{
-    $dbConnection = getDatabaseConnection();
-    $statement = $dbConnection->prepare($sql);
-    $statement->bindParam("name", $wine->wine_name);
-    $statement->bindParam("grapes", $wine->grapes);
-    $statement->bindParam("country", $wine->country);
-    $statement->bindParam("region", $wine->region);
-    $statement->bindParam("year", $wine->year);
-    $statement->bindParam("note", $wine->note);
-    $statement->bindParam("id", $id);
-    $statement->execute();
-    $dbConnection = null;
+    $app = Slim::getInstance();
+    $winePdo = $app->wineDao;
+    $winePdo->updateWine($id, $wine);
     echo json_encode($wine);
   }catch(PDOException $exception){
     echo '{"error":{"text":'. $exception->getMessage() .'}}';
@@ -53,27 +45,21 @@ function updateWine($id){
 }
 
 function getWines(){
-  $sql = "SELECT * FROM WINES ORDER BY NAME";
   try{
-    $dbConnection = getDatabaseConnection();
-    $statement = $dbConnection->query($sql);
-    $wines = $statement->fetchAll(PDO::FETCH_OBJ);
-    $dbConnection = null;
-    echo '{"wine":' . json_encode($wines) .'}';
+    $app = Slim::getInstance();
+    $winePdo = $app->wineDao; 
+    $wines = $winePdo->getWines();
+    echo '{"wines":' . json_encode($wines) . '}';
   }catch(PDOException $exception){
     echo '{"error":{"text":'. $exception->getMessage() .'}}';
   }
 }
 
 function getWine($id){
-  $sql = "SELECT * FROM WINES WHERE ID = :ID";
   try{
-    $dbConnection = getDatabaseConnection();
-    $statement = $dbConnection->prepare($sql);
-    $statement->bindParam("ID", $id);
-    $statement->execute();
-    $wine = $statement->fetchObject();
-    $dbConnection = null;
+    $app = Slim::getInstance();
+    $winePdo = $app->wineDao; 
+    $wine = $winePdo->getWine($id);
     echo json_encode($wine);
   }catch(PDOException $exception){
     echo '{"error":{"text":'.$exception->getMessage() .'}}';
@@ -81,34 +67,15 @@ function getWine($id){
 }
 
 function addWine(){
-  $sql = "INSERT INTO wines(name, grapes, country, region, year, note) VALUES(:name, :grapes, :country, :region, :year, :note)"; 
   $request = Slim::getInstance()->request();
   $wine = json_decode($request->getBody());
   try{
-    $dbConnection = getDatabaseConnection();
-    $statement = $dbConnection->prepare($sql);
-    $statement->bindParam("name", $wine->wine_name);
-    $statement->bindParam("grapes", $wine->grapes);
-    $statement->bindParam("country", $wine->country);
-    $statement->bindParam("region", $wine->region);
-    $statement->bindParam("year", $wine->year);
-    $statement->bindParam("note", $wine->note);
-    $statement->execute();
-    $wine->id = $dbConnection->lastInsertId();
-    $dbConnection = null;
+    $app = Slim::getInstance();
+    $windDao = $app->wineDao;
+    $wind = $windDao->addWine($wine);
     echo json_encode($wine);
   }catch(PDOException $exception){
     echo '{"error":{"text":'.$exception->getMessage() .'}}';
   }
 }
 
-
-function getDatabaseConnection(){
-  $dbHost = "127.0.0.1";
-  $dbUser = "slim";
-  $dbPassword = "password";
-  $dbName = "wine";
-  $dbh = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUser, $dbPassword);
-  $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  return $dbh;
-}
