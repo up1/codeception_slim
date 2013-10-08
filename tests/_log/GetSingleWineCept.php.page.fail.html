@@ -1,0 +1,12 @@
+<html><head><title>Slim Application Error</title><style>body{margin:0;padding:30px;font:12px/1.5 Helvetica,Arial,Verdana,sans-serif;}h1{margin:0;font-size:48px;font-weight:normal;line-height:48px;}strong{display:inline-block;width:65px;}</style></head><body><h1>Slim Application Error</h1><p>The application could not run because of the following error:</p><h2>Details</h2><div><strong>Type:</strong> ErrorException</div><div><strong>Code:</strong> 8</div><div><strong>Message:</strong> Undefined variable: memory_db</div><div><strong>File:</strong> /Users/roofimon/Workspace/php_slim_jquery/WinePdoDao.php</div><div><strong>Line:</strong> 110</div><h2>Trace</h2><pre>#0 /Users/roofimon/Workspace/php_slim_jquery/WinePdoDao.php(110): Slim\Slim::handleErrors(8, 'Undefined varia...', '/Users/roofimon...', 110, Array)
+#1 /Users/roofimon/Workspace/php_slim_jquery/WinePdoDao.php(21): WinePdoDao->getDatabaseConnection()
+#2 /Users/roofimon/Workspace/php_slim_jquery/index.php(61): WinePdoDao->getWine('1')
+#3 [internal function]: getWine('1')
+#4 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Route.php(436): call_user_func_array('getWine', Array)
+#5 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Slim.php(1305): Slim\Route->dispatch()
+#6 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Middleware/Flash.php(85): Slim\Slim->call()
+#7 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Middleware/MethodOverride.php(92): Slim\Middleware\Flash->call()
+#8 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Middleware/PrettyExceptions.php(67): Slim\Middleware\MethodOverride->call()
+#9 /Users/roofimon/Workspace/php_slim_jquery/vendor/slim/slim/Slim/Slim.php(1254): Slim\Middleware\PrettyExceptions->call()
+#10 /Users/roofimon/Workspace/php_slim_jquery/index.php(19): Slim\Slim->run()
+#11 {main}</pre></body></html>

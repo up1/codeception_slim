@@ -1,6 +1,8 @@
 <?php
 class WinePdoDao implements WineDAO{
   function getWines(){
+    $file = Log::factory('file', 'out.log', 'TEST');
+    $file->log('WinePdoDao getWines');
     $sql = "SELECT * FROM WINES ORDER BY NAME";
     try{
       $dbConnection = $this->getDatabaseConnection();
@@ -49,6 +51,8 @@ class WinePdoDao implements WineDAO{
   }
 
   function updateWine($id, $wine){
+    $file = Log::factory('file', 'out.log', 'TEST');
+    $file->log('WinePdoDao updateWine');
     $sql = "UPDATE WINES SET name=:name, grapes=:grapes, country=:country, region=:region, year=:year, note=:note WHERE id=:id";
     try{
       $dbConnection = $this->getDatabaseConnection();
@@ -62,7 +66,7 @@ class WinePdoDao implements WineDAO{
       $statement->bindParam("id", $id);
       $statement->execute();
       $dbConnection = null;
-      return $wine;
+      return $statement->rowCount();
     }catch(PDOException $exception){
     }
 
@@ -82,6 +86,52 @@ class WinePdoDao implements WineDAO{
   }
 
   function getDatabaseConnection(){
+    $pdo = new PDO('sqlite::memory:');
+    //$pdo = new PDO('sqlite:wines.sqlite3');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("CREATE TABLE IF NOT EXISTS wines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      name TEXT, 
+      grapes TEXT, 
+      country TEXT,
+      region TEXT,
+      year TEXT,
+      note TEXT
+    )");
+    $wines = array(
+      array('name' => 'Hello!',
+      'grapes' => 'Just testing',
+      'country' => 'Australia',
+      'region' => 'Victoria',
+      'year' => '2010',
+      'note' => 'Note'),
+    );
+
+    $insert = "INSERT INTO wines (name, grapes, country, region, year, note) 
+      VALUES (:name, :grapes, :country, :region, :year, :note)";
+    $stmt = $pdo->prepare($insert);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':grapes', $grapes);
+    $stmt->bindParam(':country', $country); 
+    $stmt->bindParam(':region', $region); 
+    $stmt->bindParam(':year', $year); 
+    $stmt->bindParam(':note', $note); 
+
+    foreach ($wines as $m) {
+      // Bind values directly to statement variables
+      $stmt->bindValue(':name', $m['name'], SQLITE3_TEXT);
+      $stmt->bindValue(':grapes', $m['grapes'], SQLITE3_TEXT);
+      $stmt->bindValue(':country', $m['country'], SQLITE3_TEXT);
+      $stmt->bindValue(':region', $m['region'], SQLITE3_TEXT);
+      $stmt->bindValue(':year', $m['year'], SQLITE3_TEXT);
+      $stmt->bindValue(':note', $m['note'], SQLITE3_TEXT);
+      $stmt->execute();
+    }
+    return $pdo;
+  }
+
+/*
+  function getDatabaseConnection(){
     $dbHost = "127.0.0.1";
     $dbUser = "slim";
     $dbPassword = "password";
@@ -90,4 +140,5 @@ class WinePdoDao implements WineDAO{
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $dbh;
   }
+ */
 }

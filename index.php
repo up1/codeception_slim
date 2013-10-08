@@ -6,7 +6,6 @@ require 'WinePdoDao.php';
 
 $app = new Slim();
 $app->log->setEnabled(true);
-
 $app->container->singleton('wineDao', function () {
   return new WinePdoDao();
 });
@@ -37,8 +36,8 @@ function updateWine($id){
   try{
     $app = Slim::getInstance();
     $winePdo = $app->wineDao;
-    $winePdo->updateWine($id, $wine);
-    echo json_encode($wine);
+    $effectedRow = $winePdo->updateWine($id, $wine);
+    echo '{"status":"success","row_effected":"'.$effectedRow.'"}';
   }catch(PDOException $exception){
     echo '{"error":{"text":'. $exception->getMessage() .'}}';
   }
